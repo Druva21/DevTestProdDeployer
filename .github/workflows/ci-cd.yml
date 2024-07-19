@@ -1,1 +1,52 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        environment: [dev, test, prod]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run tests
+      run: npm test
+
+    - name: Build project
+      run: npm run build
+
+    - name: Deploy to ${{ matrix.environment }} environment
+      if: github.ref == 'refs/heads/main' || (github.ref == 'refs/heads/develop' && matrix.environment != 'prod')
+      run: |
+        if [ "${{ matrix.environment }}" == "dev" ]; then
+          # Deployment script for dev
+          ssh user@dev-server "cd /path/to/dev/project && git pull && npm install && npm run build"
+        elif [ "${{ matrix.environment }}" == "test" ]; then
+          # Deployment script for test
+          ssh user@test-server "cd /path/to/test/project && git pull && npm install && npm run build"
+        elif [ "${{ matrix.environment }}" == "prod" ]; then
+          # Deployment script for prod
+          ssh user@prod-server "cd /path/to/prod/project && git pull && npm install && npm run build"
+        fi
 
