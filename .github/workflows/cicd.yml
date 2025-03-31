@@ -1,0 +1,103 @@
+name: CI/CD Pipeline with Docker
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # Step 1: Run Automated Tests
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      - name: Set Up Node.js (or Python, Java, etc.)
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: npm install  # Change this for other languages
+
+      - name: Run Tests
+        run: npm test  # Change this based on your test framework
+
+  # Step 2: Build and Push Docker Image for Dev
+  deploy_dev:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: DEV
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Environment Variables
+        env:
+          DEV_SECRET_KEY: ${{ secrets.DEV_SECRET_KEY }}
+        run: echo "Using DEV_SECRET_KEY in Dev"
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+      - name: Build Docker Image
+        run: docker build -t my-app:dev .
+
+      - name: Tag Image
+        run: docker tag my-app:dev ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:dev
+
+      - name: Push Image to Docker Hub
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:dev
+
+  # Step 3: Build and Push Docker Image for Test
+  deploy_test:
+    needs: deploy_dev
+    runs-on: ubuntu-latest
+    environment: TEST
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Environment Variables
+        env:
+          TEST_SECRET_KEY: ${{ secrets.TEST_SECRET_KEY }}
+        run: echo "Using TEST_SECRET_KEY in TEST"
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+      - name: Build Docker Image
+        run: docker build -t my-app:test .
+
+      - name: Tag Image
+        run: docker tag my-app:test ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:test
+
+      - name: Push Image to Docker Hub
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:test
+
+  # Step 4: Build and Push Docker Image for Prod
+  deploy_prod:
+    needs: deploy_test
+    runs-on: ubuntu-latest
+    environment: PROD
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Environment Variables
+        env:
+          PROD_SECRET_KEY: ${{ secrets.PROD_SECRET_KEY }}
+        run: echo "Using PROD_SECRET_KEY in PROD"
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+      - name: Build Docker Image
+        run: docker build -t my-app:prod .
+
+      - name: Tag Image
+        run: docker tag my-app:prod ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:prod
+
+      - name: Push Image to Docker Hub
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:prod
