@@ -28,7 +28,7 @@ jobs:
   deploy_dev:
     needs: test
     runs-on: ubuntu-latest
-    environment: DEV
+    environment: Dev
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -54,7 +54,7 @@ jobs:
   deploy_test:
     needs: deploy_dev
     runs-on: ubuntu-latest
-    environment: TEST
+    environment: Test
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -80,7 +80,7 @@ jobs:
   deploy_prod:
     needs: deploy_test
     runs-on: ubuntu-latest
-    environment: PROD
+    environment: Prod
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
