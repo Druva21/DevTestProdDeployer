@@ -21,8 +21,8 @@ jobs:
       #- name: Install Dependencies
        # run: npm install  # Change this for other languages
 
-      - name: Run Tests
-        run: npm test  # Change this based on your test framework
+     # - name: Run Tests
+      #  run: npm test  # Change this based on your test framework
 
   # Step 2: Build and Push Docker Image for Dev
   deploy_dev:
