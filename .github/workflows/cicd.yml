@@ -18,8 +18,8 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install Dependencies
-        run: npm install  # Change this for other languages
+      #- name: Install Dependencies
+       # run: npm install  # Change this for other languages
 
       - name: Run Tests
         run: npm test  # Change this based on your test framework
